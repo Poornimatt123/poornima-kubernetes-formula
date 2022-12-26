@@ -1,0 +1,52 @@
+ sudo -i
+nano install.sh
+curl https://get.docker.com/ | bash
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+sh install.sh
+rm /etc/containerd/config.toml
+systemctl restart containerd
+ kubeadm init --pod-network-cidr 192.168.0.0/16
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl get pods -A
+kubectl apply -f calico.yaml
+kubectl get pods -A
+kubectl get nodes
+kubectl get pods -A
+
+
+
+(IN WORKERNODE1)
+
+sudo -i
+nano install.sh
+curl https://get.docker.com/ | bash
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+sh install.sh
+rm /etc/containerd/config.toml
+systemctl restart containerd
+kubeadm join 172.31.21.134:6443 --token yg4wxy.5g22s4yo1ihopwqh \
+        --discovery-token-ca-cert-hash sha256:b0fbcc74b802e1f6f882978aa2e2ffc63e255c2830148ee3848b3bac120edc76
+
+
+
+(IN MASTER )
+ kubectl get nodes
+kubectl get pods -A      or  kubectl get pods --all-namespaces
+kubectl get pods -A -o wide
